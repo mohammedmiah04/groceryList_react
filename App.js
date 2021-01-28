@@ -19,9 +19,20 @@ function App() {
       // display alert
       showAlert(true, "danger", "please enter grocery");
     } else if (name && isEditing) {
-      // deal with edit
+      setList(
+        list.map((item) => {
+          if (item.id === editID) {
+            return { ...item, title: name };
+          }
+          return item;
+        })
+      );
+      setName("");
+      setEditID(null);
+      setIsEditing(false);
+      showAlert(true, "success", "value changed");
     } else {
-      // show alter
+      showAlert(true, "success", "item added to the list");
       const newItem = { id: new Date().getTime().toString(), title: name };
       setList([...list, newItem]);
       setName("");
@@ -31,10 +42,24 @@ function App() {
   const showAlert = (show = false, type = "", message = "") => {
     setAlert({ show, type, message });
   };
+  const clearList = () => {
+    showAlert(true, "danger", "empty list");
+    setList([]);
+  };
+  const removeItem = (id) => {
+    showAlert(true, "danger", "item removed");
+    setList(list.filter((item) => item.id !== id));
+  };
+  const editItem = (id) => {
+    const speceficItem = list.find((item) => item.id === id);
+    setIsEditing(true);
+    setEditID(id);
+    setName(speceficItem.title);
+  };
   return (
     <section className="section-center">
       <form className="grocery-form" onSubmit={handleSubmit}>
-        {alert.show && <Alert {...alert} removeAlert={showAlert} />}
+        {alert.show && <Alert {...alert} removeAlert={showAlert} list={list} />}
         <h3>Grocery List</h3>
         <div className="form-control">
           <input
@@ -51,8 +76,10 @@ function App() {
       </form>
       {list.length > 0 && (
         <div className="grocery-container">
-          <List items={list} />
-          <button className="btn">clear items</button>
+          <List items={list} removeItem={removeItem} editItem={editItem} />
+          <button className="btn" onClick={clearList}>
+            clear items
+          </button>
         </div>
       )}
     </section>
